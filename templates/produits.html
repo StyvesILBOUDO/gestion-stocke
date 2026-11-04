@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion de stock</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 60%; }
+        th, td { border: 1px solid #999; padding: 8px 12px; text-align: left; }
+        th { background-color: #ff7900; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Liste des produits</h1>
+    <p><a href="/ajouter">+ Ajouter un produit</a></p>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Prix (FCFA)</th>
+                        <th>Stock</th>
+            <th>Actions</th>
+        </tr>
+        {% for produit in produits %}
+        <tr>
+            <td>{{ produit["id"] }}</td>
+            <td>{{ produit["nom"] }}</td>
+            <td>{{ produit["prix"] }}</td>
+                        <td>{{ produit["quantite"] }}</td>
+            <td>
+                <a href="/modifier/{{ produit['id'] }}">Modifier</a>
+                <form method="POST" action="/supprimer/{{ produit['id'] }}" style="display:inline;" onsubmit="return confirm('Supprimer ce produit ?');">
+                    <button type="submit">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

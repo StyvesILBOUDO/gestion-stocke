@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier un produit</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        label { display: block; margin-top: 15px; }
+        input { padding: 6px; width: 250px; }
+        button { margin-top: 20px; padding: 8px 16px; background-color: #ff7900; color: white; border: none; cursor: pointer; }
+        .erreur { color: red; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Modifier le produit n°{{ produit["id"] }}</h1>
+
+    {% if erreur %}
+    <p class="erreur">{{ erreur }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label>Nom du produit
+            <input type="text" name="nom" value="{{ produit['nom'] }}" required>
+        </label>
+        <label>Prix (FCFA)
+            <input type="number" name="prix" step="any" min="0" value="{{ produit['prix'] }}" required>
+        </label>
+        <label>Quantité en stock
+            <input type="number" name="quantite" min="0" value="{{ produit['quantite'] }}" required>
+        </label>
+        <button type="submit">Enregistrer</button>
+    </form>
+
+    <p><a href="/">Retour à la liste</a></p>
+</body>
+</html>
