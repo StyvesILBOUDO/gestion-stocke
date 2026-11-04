@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        label { display: block; margin-top: 15px; }
+        input { padding: 6px; width: 250px; }
+        button { margin-top: 20px; padding: 8px 16px; background-color: #ff7900; color: white; border: none; cursor: pointer; }
+        .erreur { color: red; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Connexion</h1>
+
+    {% if erreur %}
+    <p class="erreur">{{ erreur }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label>Nom d'utilisateur
+            <input type="text" name="nom" required>
+        </label>
+        <label>Mot de passe
+            <input type="password" name="mot_de_passe" required>
+        </label>
+        <button type="submit">Se connecter</button>
+    </form>
+</body>
+</html>

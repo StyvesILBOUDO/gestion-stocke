@@ -1,13 +1,30 @@
+import os
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for
+from functools import wraps
+
+from flask import (
+    Flask, render_template, request, redirect, url_for, session
+)
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "cle-de-dev-a-changer")
 
 
 def get_connexion():
     connexion = sqlite3.connect("stock.db")
     connexion.row_factory = sqlite3.Row
     return connexion
+
+
+def connexion_requise(fonction):
+    """Redirige vers /login si l'utilisateur n'est pas connecté."""
+    @wraps(fonction)
+    def enveloppe(*args, **kwargs):
+        if "utilisateur" not in session:
+            return redirect(url_for("login"))
+        return fonction(*args, **kwargs)
+    return enveloppe
 
 
 def valider_produit(nom, prix, quantite):
@@ -24,7 +41,40 @@ def valider_produit(nom, prix, quantite):
     return prix, quantite, None
 
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    erreur = None
+
+    if request.method == "POST":
+        nom = request.form["nom"].strip()
+        mot_de_passe = request.form["mot_de_passe"]
+
+        connexion = get_connexion()
+        utilisateur = connexion.execute(
+            "SELECT * FROM utilisateurs WHERE nom = ?", (nom,)
+        ).fetchone()
+        connexion.close()
+
+        if utilisateur and check_password_hash(
+            utilisateur["mot_de_passe_hash"], mot_de_passe
+        ):
+            session.clear()
+            session["utilisateur"] = utilisateur["nom"]
+            return redirect(url_for("accueil"))
+
+        erreur = "Identifiants incorrects."
+
+    return render_template("login.html", erreur=erreur)
+
+
+@app.route("/deconnexion", methods=["POST"])
+def deconnexion():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/")
+@connexion_requise
 def accueil():
     connexion = get_connexion()
     produits = connexion.execute("SELECT * FROM produits").fetchall()
@@ -33,6 +83,7 @@ def accueil():
 
 
 @app.route("/ajouter", methods=["GET", "POST"])
+@connexion_requise
 def ajouter():
     erreur = None
 
@@ -56,6 +107,7 @@ def ajouter():
 
 
 @app.route("/modifier/<int:id>", methods=["GET", "POST"])
+@connexion_requise
 def modifier(id):
     connexion = get_connexion()
     produit = connexion.execute(
@@ -88,6 +140,7 @@ def modifier(id):
 
 
 @app.route("/supprimer/<int:id>", methods=["POST"])
+@connexion_requise
 def supprimer(id):
     connexion = get_connexion()
     connexion.execute("DELETE FROM produits WHERE id = ?", (id,))
@@ -97,6 +150,7 @@ def supprimer(id):
 
 
 @app.route("/vendre", methods=["GET", "POST"])
+@connexion_requise
 def vendre():
     connexion = get_connexion()
     erreur = None
@@ -113,7 +167,6 @@ def vendre():
             erreur = "La quantité doit être supérieure à zéro."
 
         if erreur is None:
-            # La mise à jour n'a lieu que si le stock est suffisant
             resultat = connexion.execute(
                 "UPDATE produits SET quantite = quantite - ? "
                 "WHERE id = ? AND quantite >= ?",
@@ -138,6 +191,7 @@ def vendre():
 
 
 @app.route("/ventes")
+@connexion_requise
 def ventes():
     connexion = get_connexion()
     liste = connexion.execute(
