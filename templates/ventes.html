@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Historique des ventes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 70%; }
+        th, td { border: 1px solid #999; padding: 8px 12px; text-align: left; }
+        th { background-color: #ff7900; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Historique des ventes</h1>
+    <p><a href="/vendre">+ Nouvelle vente</a> | <a href="/">Retour aux produits</a></p>
+    <table>
+        <tr>
+            <th>N°</th>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix unitaire</th>
+            <th>Total (FCFA)</th>
+            <th>Date</th>
+        </tr>
+        {% for vente in ventes %}
+        <tr>
+            <td>{{ vente["id"] }}</td>
+            <td>{{ vente["nom"] }}</td>
+            <td>{{ vente["quantite"] }}</td>
+            <td>{{ vente["prix"] }}</td>
+            <td>{{ vente["total"] }}</td>
+            <td>{{ vente["date_vente"] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

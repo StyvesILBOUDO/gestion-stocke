@@ -96,5 +96,59 @@ def supprimer(id):
     return redirect(url_for("accueil"))
 
 
+@app.route("/vendre", methods=["GET", "POST"])
+def vendre():
+    connexion = get_connexion()
+    erreur = None
+
+    if request.method == "POST":
+        try:
+            produit_id = int(request.form["produit_id"])
+            quantite = int(request.form["quantite"])
+        except ValueError:
+            produit_id, quantite = None, None
+            erreur = "Données invalides."
+
+        if erreur is None and quantite <= 0:
+            erreur = "La quantité doit être supérieure à zéro."
+
+        if erreur is None:
+            # La mise à jour n'a lieu que si le stock est suffisant
+            resultat = connexion.execute(
+                "UPDATE produits SET quantite = quantite - ? "
+                "WHERE id = ? AND quantite >= ?",
+                (quantite, produit_id, quantite),
+            )
+            if resultat.rowcount == 0:
+                erreur = "Stock insuffisant ou produit introuvable."
+            else:
+                connexion.execute(
+                    "INSERT INTO ventes (produit_id, quantite) VALUES (?, ?)",
+                    (produit_id, quantite),
+                )
+                connexion.commit()
+                connexion.close()
+                return redirect(url_for("ventes"))
+
+    produits = connexion.execute(
+        "SELECT * FROM produits WHERE quantite > 0"
+    ).fetchall()
+    connexion.close()
+    return render_template("vendre.html", produits=produits, erreur=erreur)
+
+
+@app.route("/ventes")
+def ventes():
+    connexion = get_connexion()
+    liste = connexion.execute(
+        "SELECT ventes.id, produits.nom, ventes.quantite, produits.prix, "
+        "ventes.quantite * produits.prix AS total, ventes.date_vente "
+        "FROM ventes JOIN produits ON ventes.produit_id = produits.id "
+        "ORDER BY ventes.id DESC"
+    ).fetchall()
+    connexion.close()
+    return render_template("ventes.html", ventes=liste)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
