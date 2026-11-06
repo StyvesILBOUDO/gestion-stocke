@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titre %}StockPro{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-contenu">
+            <a class="logo" href="{{ url_for('accueil') }}">
+                <span class="logo-carre"></span>StockPro
+            </a>
+
+            {% if session.get('utilisateur') %}
+            <nav>
+                <a href="{{ url_for('accueil') }}"
+                   class="{{ 'actif' if request.endpoint in ['accueil', 'ajouter', 'modifier'] }}">Produits</a>
+                <a href="{{ url_for('vendre') }}"
+                   class="{{ 'actif' if request.endpoint == 'vendre' }}">Nouvelle vente</a>
+                <a href="{{ url_for('rapport') }}"
+                   class="{{ 'actif' if request.endpoint == 'rapport' }}">Rapports</a>
+                <a href="{{ url_for('ventes') }}"
+                   class="{{ 'actif' if request.endpoint == 'ventes' }}">Historique</a>
+                <span class="utilisateur">{{ session['utilisateur'] }}</span>
+                <form method="POST" action="{{ url_for('deconnexion') }}" class="form-inline">
+                    <button type="submit" class="btn btn-contour">Se déconnecter</button>
+                </form>
+            </nav>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="contenu">
+        {% block contenu %}{% endblock %}
+    </main>
+</body>
+</html>

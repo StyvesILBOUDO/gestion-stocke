@@ -1,47 +1,96 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestion de stock</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        table { border-collapse: collapse; width: 60%; }
-        th, td { border: 1px solid #999; padding: 8px 12px; text-align: left; }
-        th { background-color: #ff7900; color: white; }
-    </style>
-</head>
-<body>
-    <h1>Liste des produits</h1>
-    <form method="POST" action="/deconnexion" style="margin-bottom:15px;">
-        <button type="submit">Se déconnecter</button>
-    </form>
-        <p>
-        <a href="/ajouter">+ Ajouter un produit</a> |
-        <a href="/vendre">Enregistrer une vente</a> |
-        <a href="/ventes">Historique des ventes</a>
-    </p>
+{% extends "base.html" %}
+
+{% block titre %}Produits · StockPro{% endblock %}
+
+{% block contenu %}
+{% macro entete(col, titre, q, tri, ordre) %}
+<th>
+    <a class="tri" href="{{ url_for('accueil', q=q, tri=col, ordre=('desc' if tri == col and ordre == 'asc' else 'asc')) }}">
+        {{ titre }}{% if tri == col %} {{ '▲' if ordre == 'asc' else '▼' }}{% endif %}
+    </a>
+</th>
+{% endmacro %}
+
+<div class="entete">
+    <div>
+        <h1>Produits</h1>
+        <p class="sous-titre">{{ produits|length }} produit(s) affiché(s) sur {{ nb_total }}</p>
+    </div>
+    <a href="{{ url_for('ajouter') }}" class="btn btn-primaire">+ Ajouter un produit</a>
+</div>
+
+{% if alertes %}
+<div class="alerte-stock">
+    <strong>⚠ {{ alertes|length }} produit(s) à réapprovisionner (stock inférieur à {{ seuil }})</strong>
+    {% for a in alertes %}
+    <span class="badge {{ 'badge-rouge' if a['quantite'] == 0 else 'badge-orange' }}">
+        {{ a['nom'] }} : {{ a['quantite'] }}
+    </span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="GET" action="{{ url_for('accueil') }}" class="recherche">
+    <input type="search" name="q" value="{{ q }}" placeholder="Rechercher un produit...">
+    <input type="hidden" name="tri" value="{{ tri }}">
+    <input type="hidden" name="ordre" value="{{ ordre }}">
+    <button type="submit" class="btn btn-contour">Rechercher</button>
+    {% if q %}
+    <a href="{{ url_for('accueil') }}" class="btn btn-contour">Effacer</a>
+    {% endif %}
+</form>
+
+<div class="carte carte-tableau">
+    {% if produits %}
     <table>
-        <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th>Prix (FCFA)</th>
-                        <th>Stock</th>
-            <th>Actions</th>
-        </tr>
-        {% for produit in produits %}
-        <tr>
-            <td>{{ produit["id"] }}</td>
-            <td>{{ produit["nom"] }}</td>
-            <td>{{ produit["prix"] }}</td>
-                        <td>{{ produit["quantite"] }}</td>
-            <td>
-                <a href="/modifier/{{ produit['id'] }}">Modifier</a>
-                <form method="POST" action="/supprimer/{{ produit['id'] }}" style="display:inline;" onsubmit="return confirm('Supprimer ce produit ?');">
-                    <button type="submit">Supprimer</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+        <thead>
+            <tr>
+                <th>N°</th>
+                {{ entete('nom', 'Produit', q, tri, ordre) }}
+                {{ entete('prix', 'Prix', q, tri, ordre) }}
+                {{ entete('stock', 'Stock', q, tri, ordre) }}
+                <th class="droite">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produit in produits %}
+            <tr>
+                <td>#{{ produit['id'] }}</td>
+                <td><strong>{{ produit['nom'] }}</strong></td>
+                <td>{{ '{:,.0f}'.format(produit['prix']).replace(',', ' ') }} FCFA</td>
+                <td>
+                    {% if produit['quantite'] == 0 %}
+                    <span class="badge badge-rouge">Rupture</span>
+                    {% elif produit['quantite'] < seuil %}
+                    <span class="badge badge-orange">{{ produit['quantite'] }} · Faible</span>
+                    {% else %}
+                    <span class="badge badge-vert">{{ produit['quantite'] }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="actions">
+                        <a href="{{ url_for('modifier', id=produit['id']) }}"
+                           class="btn btn-petit btn-contour">Modifier</a>
+                        <form method="POST" action="{{ url_for('supprimer', id=produit['id']) }}"
+                              onsubmit="return confirm('Supprimer ce produit ?');">
+                            <button type="submit" class="btn btn-petit btn-danger">Supprimer</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-</body>
-</html>
+    {% elif q %}
+    <div class="vide">
+        <p>Aucun produit ne correspond à « {{ q }} ».</p>
+        <a href="{{ url_for('accueil') }}" class="btn btn-contour">Afficher tous les produits</a>
+    </div>
+    {% else %}
+    <div class="vide">
+        <p>Aucun produit pour le moment.</p>
+        <a href="{{ url_for('ajouter') }}" class="btn btn-primaire">Ajouter le premier produit</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

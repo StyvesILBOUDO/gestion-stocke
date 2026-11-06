@@ -1,37 +1,47 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Historique des ventes</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        table { border-collapse: collapse; width: 70%; }
-        th, td { border: 1px solid #999; padding: 8px 12px; text-align: left; }
-        th { background-color: #ff7900; color: white; }
-    </style>
-</head>
-<body>
-    <h1>Historique des ventes</h1>
-    <p><a href="/vendre">+ Nouvelle vente</a> | <a href="/">Retour aux produits</a></p>
+{% extends "base.html" %}
+
+{% block titre %}Historique · StockPro{% endblock %}
+
+{% block contenu %}
+<div class="entete">
+    <div>
+        <h1>Historique des ventes</h1>
+        <p class="sous-titre">{{ ventes|length }} vente(s) enregistrée(s)</p>
+    </div>
+    <a href="{{ url_for('vendre') }}" class="btn btn-primaire">+ Nouvelle vente</a>
+</div>
+
+<div class="carte carte-tableau">
+    {% if ventes %}
     <table>
-        <tr>
-            <th>N°</th>
-            <th>Produit</th>
-            <th>Quantité</th>
-            <th>Prix unitaire</th>
-            <th>Total (FCFA)</th>
-            <th>Date</th>
-        </tr>
-        {% for vente in ventes %}
-        <tr>
-            <td>{{ vente["id"] }}</td>
-            <td>{{ vente["nom"] }}</td>
-            <td>{{ vente["quantite"] }}</td>
-            <td>{{ vente["prix"] }}</td>
-            <td>{{ vente["total"] }}</td>
-            <td>{{ vente["date_vente"] }}</td>
-        </tr>
-        {% endfor %}
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vente in ventes %}
+            <tr>
+                <td>#{{ vente['id'] }}</td>
+                <td><strong>{{ vente['nom'] }}</strong></td>
+                <td>{{ vente['quantite'] }}</td>
+                <td>{{ '{:,.0f}'.format(vente['prix']).replace(',', ' ') }} FCFA</td>
+                <td><strong>{{ '{:,.0f}'.format(vente['total']).replace(',', ' ') }} FCFA</strong></td>
+                <td>{{ vente['date_vente'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-</body>
-</html>
+    {% else %}
+    <div class="vide">
+        <p>Aucune vente enregistrée.</p>
+        <a href="{{ url_for('vendre') }}" class="btn btn-primaire">Enregistrer une vente</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

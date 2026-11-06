@@ -1,31 +1,24 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Connexion</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        label { display: block; margin-top: 15px; }
-        input { padding: 6px; width: 250px; }
-        button { margin-top: 20px; padding: 8px 16px; background-color: #ff7900; color: white; border: none; cursor: pointer; }
-        .erreur { color: red; margin-bottom: 10px; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block titre %}Connexion · StockPro{% endblock %}
+
+{% block contenu %}
+<div class="carte carte-connexion formulaire">
     <h1>Connexion</h1>
+    <p class="sous-titre">Accédez à votre espace de gestion.</p>
 
     {% if erreur %}
-    <p class="erreur">{{ erreur }}</p>
+    <div class="alerte-erreur">{{ erreur }}</div>
     {% endif %}
 
     <form method="POST">
         <label>Nom d'utilisateur
-            <input type="text" name="nom" required>
+            <input type="text" name="nom" required autofocus>
         </label>
         <label>Mot de passe
             <input type="password" name="mot_de_passe" required>
         </label>
-        <button type="submit">Se connecter</button>
+        <button type="submit" class="btn btn-primaire" style="width:100%;">Se connecter</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

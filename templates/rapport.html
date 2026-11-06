@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block titre %}Rapports · StockPro{% endblock %}
+
+{% block contenu %}
+<div class="entete">
+    <div>
+        <h1>Rapport des ventes</h1>
+               <p class="sous-titre">Produits vendus, quantités et montants par période.</p>
+    </div>
+    <a href="{{ url_for('rapport_export', periode=periode, date=ref) }}" class="btn btn-primaire">⬇ Télécharger en CSV</a>
+</div>
+
+<div class="onglets">
+    <a href="{{ url_for('rapport', periode='jour', date=ref) }}"
+       class="{{ 'actif' if periode == 'jour' }}">Jour</a>
+    <a href="{{ url_for('rapport', periode='semaine', date=ref) }}"
+       class="{{ 'actif' if periode == 'semaine' }}">Semaine</a>
+    <a href="{{ url_for('rapport', periode='mois', date=ref) }}"
+       class="{{ 'actif' if periode == 'mois' }}">Mois</a>
+</div>
+
+<div class="barre-periode">
+    <a class="btn btn-contour btn-petit"
+       href="{{ url_for('rapport', periode=periode, date=precedent) }}">← Précédent</a>
+    <strong>{{ libelle }}</strong>
+    <a class="btn btn-contour btn-petit"
+       href="{{ url_for('rapport', periode=periode, date=suivant) }}">Suivant →</a>
+    <a class="btn btn-contour btn-petit"
+       href="{{ url_for('rapport', periode=periode, date=aujourdhui) }}">Aujourd'hui</a>
+
+    <form method="GET" action="{{ url_for('rapport') }}" class="form-inline">
+        <input type="hidden" name="periode" value="{{ periode }}">
+        <input type="date" name="date" value="{{ ref }}">
+        <button type="submit" class="btn btn-petit btn-contour">Aller</button>
+    </form>
+</div>
+
+<div class="stats">
+    <div class="carte stat">
+        <div class="stat-valeur">{{ '{:,.0f}'.format(total_montant).replace(',', ' ') }} FCFA</div>
+        <div class="stat-titre">Chiffre d'affaires</div>
+    </div>
+    <div class="carte stat">
+        <div class="stat-valeur">{{ total_quantite }}</div>
+        <div class="stat-titre">Articles vendus</div>
+    </div>
+    <div class="carte stat">
+        <div class="stat-valeur">{{ nb_ventes }}</div>
+        <div class="stat-titre">Ventes enregistrées</div>
+    </div>
+</div>
+
+{% if lignes %}
+<h2 class="titre-section">Total vendu par produit</h2>
+
+<div class="stats">
+    {% for ligne in lignes %}
+    {% set part = (ligne['total'] / total_montant * 100) if total_montant > 0 else 0 %}
+    <div class="carte produit-stat">
+        <div class="produit-nom">{{ ligne['nom'] }}</div>
+        <div class="stat-valeur">{{ '{:,.0f}'.format(ligne['total']).replace(',', ' ') }} FCFA</div>
+        <div class="stat-titre">{{ ligne['quantite'] }} unité(s) vendue(s)</div>
+        <div class="barre"><div class="barre-remplie" style="width: {{ '{:.0f}'.format(part) }}%;"></div></div>
+        <div class="stat-titre">{{ '{:.0f}'.format(part) }} % du chiffre d'affaires</div>
+    </div>
+    {% endfor %}
+</div>
+
+<h2 class="titre-section">Détail</h2>
+{% endif %}
+
+<div class="carte carte-tableau">
+    {% if lignes %}
+    <table>
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité vendue</th>
+                <th class="droite">Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in lignes %}
+            <tr>
+                <td><strong>{{ ligne['nom'] }}</strong></td>
+                <td>{{ ligne['quantite'] }}</td>
+                <td class="droite">{{ '{:,.0f}'.format(ligne['total']).replace(',', ' ') }} FCFA</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>Total</td>
+                <td>{{ total_quantite }}</td>
+                <td class="droite">{{ '{:,.0f}'.format(total_montant).replace(',', ' ') }} FCFA</td>
+            </tr>
+        </tfoot>
+    </table>
+    {% else %}
+    <div class="vide">Aucune vente sur cette période.</div>
+    {% endif %}
+</div>
+{% endblock %}

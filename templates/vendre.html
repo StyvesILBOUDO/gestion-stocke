@@ -1,23 +1,21 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Enregistrer une vente</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        label { display: block; margin-top: 15px; }
-        input, select { padding: 6px; width: 262px; }
-        button { margin-top: 20px; padding: 8px 16px; background-color: #ff7900; color: white; border: none; cursor: pointer; }
-        .erreur { color: red; margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-    <h1>Enregistrer une vente</h1>
+{% extends "base.html" %}
 
+{% block titre %}Nouvelle vente · StockPro{% endblock %}
+
+{% block contenu %}
+<div class="entete">
+    <div>
+        <h1>Nouvelle vente</h1>
+        <p class="sous-titre">Le stock sera mis à jour automatiquement.</p>
+    </div>
+</div>
+
+<div class="carte formulaire">
     {% if erreur %}
-    <p class="erreur">{{ erreur }}</p>
+    <div class="alerte-erreur">{{ erreur }}</div>
     {% endif %}
 
+    {% if produits %}
     <form method="POST">
         <label>Produit
             <select name="produit_id" required>
@@ -31,9 +29,11 @@
         <label>Quantité vendue
             <input type="number" name="quantite" min="1" required>
         </label>
-        <button type="submit">Valider la vente</button>
+        <button type="submit" class="btn btn-primaire">Valider la vente</button>
+        <a href="{{ url_for('accueil') }}" class="btn btn-contour">Annuler</a>
     </form>
-
-    <p><a href="/">Retour à la liste</a></p>
-</body>
-</html>
+    {% else %}
+    <div class="vide">Aucun produit en stock à vendre.</div>
+    {% endif %}
+</div>
+{% endblock %}

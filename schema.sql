@@ -12,6 +12,7 @@ CREATE TABLE ventes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     produit_id INTEGER NOT NULL,
     quantite INTEGER NOT NULL,
+    prix_unitaire REAL NOT NULL,
     date_vente TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (produit_id) REFERENCES produits (id)
 );
